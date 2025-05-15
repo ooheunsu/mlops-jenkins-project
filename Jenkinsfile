@@ -1,17 +1,21 @@
 pipeline {
 	agent any
-	environment {
-		NEW_VERSION = '1.0.0'
-        ADMIN_CREDENTIALS = credentials('admin_user_credentials')
+	parameters {
+		choice(name: 'VERSION', choices: ['1.1.0','1.2.0','1.3.0'], description: '')
+		booleanParam(name: 'executeTests', defaultValue: true, description: '')
 	}
 	stages {
 		stage("build") {
 			steps {
 				echo 'building the applicaiton...'
-				echo "building version ${env.GIT_BRANCH }"
 			}
 		}
 		stage("test") {
+			when {
+				expression {
+					params.executeTests
+				}
+			}
 			steps {
 				echo 'testing the applicaiton...'
 			}
@@ -19,12 +23,7 @@ pipeline {
 		stage("deploy") {
 			steps {
 				echo 'deploying the applicaiton...'
-				withCredentials([[$class: 'UsernamePasswordMultiBinding',
-					credentialsId: 'admin_user_credentials', 
-					usernameVariable: 'USER', 
-					passwordVariable: 'PWD'
-				]]) {
-					sh 'printf ${USER}'
+				echo "deploying version ${params.VERSION}"
 			}
 		}
 	}
